@@ -1,5 +1,3 @@
-from django.core import serializers
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -9,6 +7,8 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 from kanban.models import Tasks, Contacts
 from kanban.serializers import UserSerializer, TasksSerializer, ContactsSerializer
 
@@ -16,6 +16,9 @@ from kanban.serializers import UserSerializer, TasksSerializer, ContactsSerializ
 
 # Create your views here.
 class TasksViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+
     serializer_class = TasksSerializer
 
     def get(self, request, format=None):
@@ -49,6 +52,9 @@ class TasksViewSet(APIView):
         # return  Response({'status': 'OK - DELETE Tasks'})
 
 class UsersViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+
     def get(self, request):
         users = User.objects.all()
         serialized_obj = UserSerializer(users, many=True)
@@ -79,6 +85,9 @@ class UsersViewSet(APIView):
         return Response({'statustext': request}, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
 
 class ContactsViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+
     def get(self, request):
         contacts = Contacts.objects.all()
         serialized_obj = ContactsSerializer(contacts, many=True)
