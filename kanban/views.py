@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -28,11 +29,47 @@ class TasksViewSet(APIView):
         # return Response({'status': 'OK - GET Tasks'})
         
     def post(self, request):
-        serializer_obj = TasksSerializer(data=request.data)
-        if serializer_obj.is_valid():
-            serializer_obj.save()
-            return Response(serializer_obj.data, status=status.HTTP_201_CREATED)
-        return Response({'statustext': request}, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
+        title = request.data['title']
+        description = request.data['description']
+        task_status = request.data['status']
+        color = request.data['color']
+        priority = request.data['priority']
+        members = request.data['members']
+        author_data = request.data.get('author', None)
+        user_id = author_data.get('id') if isinstance(author_data, dict) else author_data
+        if title != '':
+            user = None
+            if user_id != 0:
+                try:
+                    user = User.objects.get(id=user_id)
+                    # user = Token.objects.get(key='token string').user
+                except User.DoesNotExist:
+                    return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+            task = Tasks.objects.create(
+                title = title, 
+                description = description, 
+                status = task_status, 
+                color = color,
+                priority = priority,
+                members = members,
+                created_at = timezone.now(),
+                author = user
+            )
+            task.save()
+            serializer_obj_user = UserSerializer(user)
+            return Response({
+                        'title': task.title,
+                        'description': task.description,
+                        'status': task.status,
+                        'color': task.color,
+                        'priority': task.priority,
+                        'members': task.members,
+                        'created_at': task.created_at,
+                        'author': serializer_obj_user.data
+                        }, 
+                            content_type="application/json", 
+                            status=status.HTTP_201_CREATED)
+        return Response({'statustext': request, 'anfrage': request.data}, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
         # return  Response({'status': 'OK - POST Tasks'})
         
     def put(self, request, pk=None):
@@ -148,9 +185,25 @@ class LoginView(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
-            'user_id': user.id,
+            'userid': user.id,
             'email': user.email
         })
+
+class CurrentUserViewSet(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+
+    def post(self, request):
+        token_key = request.data.get("token")
+        if token_key:
+            try:
+                user = Token.objects.get(key=token_key).user
+                return Response({
+                    'userid': user.id
+                }, content_type="application/json", status=status.HTTP_200_OK)
+            except Token.DoesNotExist:
+                return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'error': 'Token not provided'}, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(APIView):
     def post(self, request):

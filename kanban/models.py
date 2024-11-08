@@ -11,6 +11,7 @@ class Tasks(models.Model):
     created_at = models.DateTimeField(default=datetime.now)
     author = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,default=None)
     priority = models.IntegerField(default=0)
+    members = models.TextField(default="[]")
     
     def __str__(self) -> str:
         return f'({self.id}) {self.title}, Status: {self.status} Priority: {self.priority}'
