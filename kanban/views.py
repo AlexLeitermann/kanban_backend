@@ -90,13 +90,12 @@ class TasksViewSet(APIView):
 
 class UsersViewSet(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request):
         users = User.objects.all()
         serialized_obj = UserSerializer(users, many=True)
         return Response(serialized_obj.data, content_type="application/json")
-        # return  Response({'status': 'OK - GET Users'})
         
     def post(self, request):
         username = request.data.get("username", "")
@@ -123,7 +122,7 @@ class UsersViewSet(APIView):
 
 class ContactsViewSet(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         contacts = Contacts.objects.all()
@@ -190,7 +189,7 @@ class LoginView(ObtainAuthToken):
 
 class CurrentUserViewSet(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         token_key = request.data.get("token")
@@ -210,7 +209,6 @@ class CurrentUserViewSet(APIView):
 
 class RegisterView(APIView):
     def post(self, request):
-        # return Response({'statustext': request}, content_type="application/json", status=status.HTTP_200_OK)
         username = request.data.get("username")
         userpasswordnew = request.data.get("newpassword")
         userpasswordconfirm = request.data.get("confirmpassword")
