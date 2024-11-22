@@ -20,7 +20,7 @@ class TasksViewSet(APIView):
 
     serializer_class = TasksSerializer
 
-    def get(self):
+    def get(self, request):
         tasks = Tasks.objects.all()
         serializer_obj = TasksSerializer(tasks, many=True)
         return Response(serializer_obj.data, content_type="application/json", status=status.HTTP_200_OK)
@@ -75,7 +75,7 @@ class TasksViewSet(APIView):
             return Response(serializer_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         return Response(serializer_obj.errors, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self, pk=None):
+    def delete(self, request, pk=None):
         task = get_object_or_404(Tasks, pk=pk)
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -84,7 +84,7 @@ class UsersViewSet(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated] 
 
-    def get(self):
+    def get(self, request):
         users = User.objects.all()
         serialized_obj = UserSerializer(users, many=True)
         return Response(serialized_obj.data, content_type="application/json", status=status.HTTP_200_OK)
@@ -161,17 +161,17 @@ class ContactsViewSet(APIView):
             return Response(serializer_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         return Response(serializer_obj.errors, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self, pk=None):
+    def delete(self, request, pk=None):
         task = get_object_or_404(Contacts, pk=pk)
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class LoginView(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        token = Token.objects.get_or_create(user=user)
+        token, created = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
             'userid': user.id,
