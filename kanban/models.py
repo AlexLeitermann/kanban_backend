@@ -14,7 +14,7 @@ class Tasks(models.Model):
     members = models.TextField(default="[]")
     
     def __str__(self) -> str:
-        return f'({self.id}) {self.title}, Status: {self.status} Priority: {self.priority}'
+        return f'({self.id}) {self.title}, Status: {self.status} Priority: {self.priority} Members: {self.members}'
     
 class Contacts(models.Model):
     name = models.CharField(max_length=150, default='Guest')

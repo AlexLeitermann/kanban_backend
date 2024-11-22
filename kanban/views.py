@@ -157,7 +157,6 @@ class ContactsViewSet(APIView):
                         'initials': contact.initials,
                         'email': contact.email,
                         'phone': contact.phone,
-                        # 'user': contact.user,
                         }, 
                             content_type="application/json", 
                             status=status.HTTP_201_CREATED)
@@ -199,7 +198,11 @@ class CurrentUserViewSet(APIView):
             try:
                 user = Token.objects.get(key=token_key).user
                 return Response({
-                    'userid': user.id
+                    'id': user.id,
+                    'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
                 }, content_type="application/json", status=status.HTTP_200_OK)
             except Token.DoesNotExist:
                 return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -208,7 +211,7 @@ class CurrentUserViewSet(APIView):
 class RegisterView(APIView):
     def post(self, request):
         # return Response({'statustext': request}, content_type="application/json", status=status.HTTP_200_OK)
-        username = request.data.get("email")
+        username = request.data.get("username")
         userpasswordnew = request.data.get("newpassword")
         userpasswordconfirm = request.data.get("confirmpassword")
         first_name = request.data.get("firstname")
