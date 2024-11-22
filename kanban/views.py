@@ -13,20 +13,17 @@ from rest_framework.permissions import IsAuthenticated
 from kanban.models import Tasks, Contacts
 from kanban.serializers import UserSerializer, TasksSerializer, ContactsSerializer
 
-
-
 # Create your views here.
 class TasksViewSet(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated] #[permissions.IsAdminUser]
+    permission_classes = [IsAuthenticated]
 
     serializer_class = TasksSerializer
 
-    def get(self, request, format=None):
+    def get(self):
         tasks = Tasks.objects.all()
         serializer_obj = TasksSerializer(tasks, many=True)
-        return Response(serializer_obj.data, status=status.HTTP_200_OK, content_type="application/json")
-        # return Response({'status': 'OK - GET Tasks'})
+        return Response(serializer_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         
     def post(self, request):
         title = request.data['title']
@@ -42,7 +39,6 @@ class TasksViewSet(APIView):
             if user_id != 0:
                 try:
                     user = User.objects.get(id=user_id)
-                    # user = Token.objects.get(key='token string').user
                 except User.DoesNotExist:
                     return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
             task = Tasks.objects.create(
@@ -70,32 +66,28 @@ class TasksViewSet(APIView):
                             content_type="application/json", 
                             status=status.HTTP_201_CREATED)
         return Response({'statustext': request, 'anfrage': request.data}, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
-        # return  Response({'status': 'OK - POST Tasks'})
         
     def put(self, request, pk=None):
         task = get_object_or_404(Tasks, pk=pk)
         serializer_obj = TasksSerializer(task, data=request.data)
         if serializer_obj.is_valid():
             serializer_obj.save()
-            return Response(serializer_obj.data, status=status.HTTP_200_OK, content_type="application/json")
+            return Response(serializer_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         return Response(serializer_obj.errors, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
-        # return Response({'statustext': pk, 'text2':''}, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
-        # return  Response({'status': 'OK - PUT Tasks'})
         
-    def delete(self, request, pk=None):
+    def delete(self, pk=None):
         task = get_object_or_404(Tasks, pk=pk)
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        # return  Response({'status': 'OK - DELETE Tasks'})
 
 class UsersViewSet(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated] 
 
-    def get(self, request):
+    def get(self):
         users = User.objects.all()
         serialized_obj = UserSerializer(users, many=True)
-        return Response(serialized_obj.data, content_type="application/json")
+        return Response(serialized_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         
     def post(self, request):
         username = request.data.get("username", "")
@@ -127,7 +119,7 @@ class ContactsViewSet(APIView):
     def get(self, request):
         contacts = Contacts.objects.all()
         serialized_obj = ContactsSerializer(contacts, many=True)
-        return Response(serialized_obj.data, status=status.HTTP_200_OK, content_type="application/json")
+        return Response(serialized_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         
     def post(self, request):
         name = request.data.get("name", "")
@@ -166,21 +158,20 @@ class ContactsViewSet(APIView):
         serializer_obj = ContactsSerializer(task, data=request.data)
         if serializer_obj.is_valid():
             serializer_obj.save()
-            return Response(serializer_obj.data, status=status.HTTP_200_OK, content_type="application/json")
+            return Response(serializer_obj.data, content_type="application/json", status=status.HTTP_200_OK)
         return Response(serializer_obj.errors, content_type="application/json", status=status.HTTP_400_BAD_REQUEST)
         
-    def delete(self, request, pk=None):
+    def delete(self, pk=None):
         task = get_object_or_404(Contacts, pk=pk)
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class LoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data,
-                                           context={'request': request})
+        serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
-        token, created = Token.objects.get_or_create(user=user)
+        token = Token.objects.get_or_create(user=user)
         return Response({
             'token': token.key,
             'userid': user.id,
