@@ -1,0 +1,1 @@
+This is a backend learning project in Django. There is an associated frontend project (https://github.com/AlexLeitermann/kanban_frontend). The frontend is currently hosted at: https://link.leitermann.online/
