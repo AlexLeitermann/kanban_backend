@@ -3,7 +3,7 @@ from kanban.models import Tasks, Contacts
 
 # Register your models here.
 class TasksAdmin(admin.ModelAdmin):
-    fields = ["title", "description", "color", "status", "created_at", "author", "priority"]
+    fields = ["title", "description", "color", "status", "created_at", "author", "priority", "members"]
     # list_display = ["id", "title", "color", "status", "priority", "author"]
 
 class ContactsAdmin(admin.ModelAdmin):
